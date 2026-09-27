@@ -735,11 +735,10 @@
         <div class="admin-modal">
             <h3 id="modalTitle">Админ-панель</h3>
             
-            <!-- Форма входа (Пароль скрыт, подсказка вынесена отдельно) -->
+            <!-- Форма входа (Без подсказок, только поле пароля) -->
             <div id="loginForm">
-                <p style="color: var(--text-muted); margin-bottom: 15px; font-size: 0.9rem;">Введите пароль администратора (подсказка: <code>admin123</code>)</p>
-                <div class="form-group">
-                    <label>Пароль</label>
+                <div class="form-group" style="margin-top: 10px;">
+                    <label>Пароль администратора</label>
                     <input type="password" id="adminPassword" class="form-control" placeholder="••••••••" autocomplete="current-password">
                 </div>
                 <div class="modal-btns">
@@ -748,7 +747,7 @@
                 </div>
             </div>
 
-            <!-- Форма добавления товара -->
+            <!-- Форма добавления товара с выбором фото из галереи -->
             <div id="addProductForm" style="display: none;">
                 <p style="color: var(--accent); margin-bottom: 15px; font-weight: 600;">Добавить товар / выпечку</p>
                 <div class="form-group">
@@ -768,8 +767,8 @@
                     <input type="number" id="prodPrice" class="form-control" placeholder="350">
                 </div>
                 <div class="form-group">
-                    <label>Ссылка на картинку (прямая ссылка с Imgur)</label>
-                    <input type="text" id="prodImg" class="form-control" placeholder="https://i.imgur.com/xxxxxx.jpg">
+                    <label>Фотография из галереи</label>
+                    <input type="file" id="prodImgFile" class="form-control" accept="image/*" style="padding: 7px;">
                 </div>
                 <div class="form-group">
                     <label>Описание</label>
@@ -876,10 +875,9 @@
             filtered.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'menu-card';
-                // Добавлены атрибуты referrerpolicy для нормальной загрузки картинок с внешних хостингов (включая Imgur)
                 card.innerHTML = `
                     <div class="card-img-wrapper">
-                        <img src="${item.img || 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80'}" class="card-img" alt="${item.title}" referrerpolicy="no-referrer" crossorigin="anonymous">
+                        <img src="${item.img || 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80'}" class="card-img" alt="${item.title}">
                     </div>
                     <div class="card-content">
                         <span class="card-tag">${item.category}</span>
@@ -989,7 +987,7 @@
             modal.classList.add('open');
             loginForm.style.display = 'block';
             addProductForm.style.display = 'none';
-            document.getElementById('adminPassword').value = ''; // Поле теперь пустое
+            document.getElementById('adminPassword').value = '';
             document.getElementById('modalTitle').innerText = 'Админ-панель';
         }
 
@@ -1012,7 +1010,7 @@
             const title = document.getElementById('prodTitle').value.trim();
             const category = document.getElementById('prodCategory').value;
             const price = Number(document.getElementById('prodPrice').value);
-            const img = document.getElementById('prodImg').value.trim();
+            const fileInput = document.getElementById('prodImgFile');
             const desc = document.getElementById('prodDesc').value.trim();
 
             if(!title || !price) {
@@ -1020,12 +1018,26 @@
                 return;
             }
 
+            // Если выбрана фотка из галереи, читаем её
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    saveNewProduct(title, category, price, e.target.result, desc);
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                // Если файл не выбрали, ставим дефолтную картинку
+                saveNewProduct(title, category, price, 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80', desc);
+            }
+        }
+
+        function saveNewProduct(title, category, price, imgData, desc) {
             const newProduct = {
                 id: Date.now(),
                 title,
                 category,
                 price,
-                img: img || 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80',
+                img: imgData,
                 desc: desc || 'Свежая позиция меню.'
             };
 
@@ -1034,7 +1046,7 @@
 
             document.getElementById('prodTitle').value = '';
             document.getElementById('prodPrice').value = '';
-            document.getElementById('prodImg').value = '';
+            document.getElementById('prodImgFile').value = '';
             document.getElementById('prodDesc').value = '';
 
             closeAdminPanel();
