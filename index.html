@@ -22,6 +22,8 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            /* Убираем синее системное выделение при нажатии на мобильных */
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -576,7 +578,7 @@
             cursor: pointer;
         }
 
-        /* Модальное окно Админ-панели */
+        /* Модальные окна Админ-панели */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -774,6 +776,69 @@
             margin-bottom: 15px;
         }
 
+        /* Кастомное модальное окно подтверждения удаления */
+        .confirm-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 5000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            padding: 20px;
+        }
+
+        .confirm-modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .confirm-modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 25px;
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+        }
+
+        .confirm-modal h4 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .confirm-modal p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .confirm-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-danger-confirm {
+            background: var(--danger);
+            color: #fff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 800;
+            flex: 1;
+        }
+
         /* Футер */
         footer {
             padding: 40px 5%;
@@ -851,9 +916,7 @@
             <div id="adminDashboard" style="display: none;">
                 <button class="btn-add-new" onclick="showAddProductForm()">+ Добавить новый товар</button>
                 <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 8px; font-weight: 600;">Управление товарами:</p>
-                <div class="admin-products-list" id="adminProductsList">
-                    <!-- Список товаров подгружается сюда -->
-                </div>
+                <div class="admin-products-list" id="adminProductsList"></div>
                 <div class="modal-btns">
                     <button class="btn-close-modal" onclick="closeAdminPanel()" style="width: 100%;">Закрыть</button>
                 </div>
@@ -891,6 +954,18 @@
                     <button class="btn-close-modal" onclick="backToDashboard()">Назад</button>
                     <button class="btn-submit" onclick="saveProduct()">Сохранить</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Кастомное красивое окно подтверждения удаления -->
+    <div class="confirm-modal-overlay" id="confirmModal">
+        <div class="confirm-modal">
+            <h4>Удалить товар?</h4>
+            <p>Это действие нельзя отменить. Товар пропадет из меню.</p>
+            <div class="confirm-btns">
+                <button class="btn-close-modal" onclick="closeConfirmModal()">Отмена</button>
+                <button class="btn-danger-confirm" id="confirmDeleteBtn">Удалить</button>
             </div>
         </div>
     </div>
@@ -970,6 +1045,7 @@
         let products = JSON.parse(localStorage.getItem('coffee_products')) || defaultProducts;
         let cart = [];
         let currentFilter = 'Все';
+        let productToDeleteId = null;
 
         // Рендер меню на сайте
         function renderMenu(filter = 'Все') {
@@ -1091,6 +1167,7 @@
         const loginForm = document.getElementById('loginForm');
         const adminDashboard = document.getElementById('adminDashboard');
         const addProductForm = document.getElementById('addProductForm');
+        const confirmModal = document.getElementById('confirmModal');
 
         function openAdminPanel() {
             modal.classList.add('open');
@@ -1117,7 +1194,6 @@
             }
         }
 
-        // Рендер списка товаров в админке
         function renderAdminProductsList() {
             const listContainer = document.getElementById('adminProductsList');
             listContainer.innerHTML = '';
@@ -1140,12 +1216,33 @@
                     </div>
                     <div class="admin-actions">
                         <button class="btn-edit" onclick="editProduct(${item.id})">Изм.</button>
-                        <button class="btn-delete" onclick="deleteProduct(${item.id})">Удалить</button>
+                        <button class="btn-delete" onclick="openConfirmModal(${item.id})">Удалить</button>
                     </div>
                 `;
                 listContainer.appendChild(itemDiv);
             });
         }
+
+        // Кастомное модальное окно удаления
+        function openConfirmModal(id) {
+            productToDeleteId = id;
+            confirmModal.classList.add('open');
+        }
+
+        function closeConfirmModal() {
+            productToDeleteId = null;
+            confirmModal.classList.remove('open');
+        }
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+            if (productToDeleteId !== null) {
+                products = products.filter(p => p.id !== productToDeleteId);
+                localStorage.setItem('coffee_products', JSON.stringify(products));
+                renderAdminProductsList();
+                renderMenu(currentFilter);
+                closeConfirmModal();
+            }
+        });
 
         function showAddProductForm() {
             document.getElementById('formActionTitle').innerText = 'Добавить новый товар';
@@ -1171,20 +1268,11 @@
             document.getElementById('prodCategory').value = product.category;
             document.getElementById('prodPrice').value = product.price;
             document.getElementById('prodDesc').value = product.desc;
-            document.getElementById('prodImgFile').value = ''; // сброс файла
+            document.getElementById('prodImgFile').value = '';
 
             adminDashboard.style.display = 'none';
             addProductForm.style.display = 'block';
             document.getElementById('modalTitle').innerText = 'Изменение товара';
-        }
-
-        function deleteProduct(id) {
-            if (confirm('Точно удалить этот товар?')) {
-                products = products.filter(p => p.id !== id);
-                localStorage.setItem('coffee_products', JSON.stringify(products));
-                renderAdminProductsList();
-                renderMenu(currentFilter);
-            }
         }
 
         function backToDashboard() {
@@ -1207,10 +1295,8 @@
                 return;
             }
 
-            // Функция сохранения данных с учетом картинки
             const processSave = (imgUrl) => {
                 if (editId) {
-                    // Редактирование существующего
                     const index = products.findIndex(p => p.id == editId);
                     if (index !== -1) {
                         products[index].title = title;
@@ -1218,11 +1304,10 @@
                         products[index].price = price;
                         products[index].desc = desc || products[index].desc;
                         if (imgUrl) {
-                            products[index].img = imgUrl; // обновляем картинку только если выбрали новую
+                            products[index].img = imgUrl;
                         }
                     }
                 } else {
-                    // Добавление нового
                     const newProduct = {
                         id: Date.now(),
                         title,
@@ -1239,7 +1324,6 @@
                 backToDashboard();
             };
 
-            // Проверяем, выбрали ли файл из галереи
             if (fileInput.files && fileInput.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
