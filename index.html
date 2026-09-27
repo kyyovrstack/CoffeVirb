@@ -94,7 +94,7 @@
             100% { opacity: 1; transform: scale(1); }
         }
 
-        /* Анимация появления контента сайта */
+        /* Анимация появления сайта */
         .hero, header {
             opacity: 0;
             transform: translateY(20px);
@@ -138,7 +138,7 @@
 
         .nav-links {
             display: flex;
-            gap: 30px;
+            gap: 25px;
             list-style: none;
             align-items: center;
         }
@@ -148,6 +148,7 @@
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s;
+            cursor: pointer;
         }
 
         .nav-links a:hover {
@@ -156,8 +157,26 @@
 
         .admin-link {
             color: var(--accent) !important;
-            cursor: pointer;
             font-weight: 800 !important;
+        }
+
+        .cart-btn-nav {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 16px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .cart-btn-nav:hover {
+            border-color: var(--accent);
+            color: var(--accent);
         }
 
         .btn-order {
@@ -394,7 +413,161 @@
             color: var(--bg);
         }
 
-        /* Модальное окно Админки */
+        /* Выдвижная Корзина */
+        .cart-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 3000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .cart-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .cart-drawer {
+            position: fixed;
+            top: 0;
+            right: -450px;
+            width: 100%;
+            max-width: 450px;
+            height: 100vh;
+            background: var(--surface);
+            border-left: 1px solid var(--border);
+            z-index: 3001;
+            display: flex;
+            flex-direction: column;
+            transition: right 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+
+        .cart-overlay.open .cart-drawer {
+            right: 0;
+        }
+
+        .cart-header {
+            padding: 25px 30px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-header h3 {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+
+        .close-cart {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close-cart:hover {
+            color: var(--text);
+        }
+
+        .cart-items {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .cart-item {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .cart-item-info h4 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .cart-item-price {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .cart-item-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .qty-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: border-color 0.3s;
+        }
+
+        .qty-btn:hover {
+            border-color: var(--accent);
+        }
+
+        .cart-footer {
+            padding: 25px 30px;
+            border-top: 1px solid var(--border);
+            background: var(--bg);
+        }
+
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
+        .btn-checkout {
+            width: 100%;
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            padding: 15px;
+            border-radius: 15px;
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-checkout:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        /* Модальное окно Админ-панели */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -406,7 +579,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 2000;
+            z-index: 4000;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s;
@@ -514,7 +687,7 @@
 </head>
 <body>
 
-    <!-- Прелоудер (Анимация при входе) -->
+    <!-- Прелоудер -->
     <div id="preloader">
         <div class="loader-logo">BLACK<span>BEAN</span></div>
         <div class="loader-bar">
@@ -530,9 +703,87 @@
             <li><a href="#about">О нас</a></li>
             <li><a href="#contacts">Контакты</a></li>
             <li><a class="admin-link" onclick="openAdminPanel()">⚙️ Админка</a></li>
+            <li>
+                <button class="cart-btn-nav" onclick="toggleCart()">
+                    🛒 Корзина <span id="cartCount">0</span>
+                </button>
+            </li>
         </ul>
         <a href="#menu" class="btn-order">Взять с собой</a>
     </header>
+
+    <!-- Выдвижная Корзина -->
+    <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()">
+        <div class="cart-drawer" onclick="event.stopPropagation()">
+            <div class="cart-header">
+                <h3>Твой заказ</h3>
+                <button class="close-cart" onclick="toggleCart()">×</button>
+            </div>
+            <div class="cart-items" id="cartItemsContainer">
+                <!-- Товары в корзине -->
+            </div>
+            <div class="cart-footer">
+                <div class="cart-total">
+                    <span>Итого:</span>
+                    <span id="cartTotalPrice">0 ₽</span>
+                </div>
+                <button class="btn-checkout" onclick="checkout()">Оформить заказ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно Админ-панели -->
+    <div class="modal-overlay" id="adminModal">
+        <div class="admin-modal">
+            <h3 id="modalTitle">Панель администратора</h3>
+            
+            <!-- Форма входа -->
+            <div id="loginForm">
+                <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.95rem;">Введите пароль (пароль: <code>admin123</code>)</p>
+                <div class="form-group">
+                    <label>Пароль</label>
+                    <input type="password" id="adminPassword" class="form-control" placeholder="••••••••">
+                </div>
+                <div class="modal-btns">
+                    <button class="btn-close-modal" onclick="closeAdminPanel()">Отмена</button>
+                    <button class="btn-submit" onclick="checkPassword()">Войти</button>
+                </div>
+            </div>
+
+            <!-- Форма добавления товара -->
+            <div id="addProductForm" style="display: none;">
+                <p style="color: var(--accent); margin-bottom: 20px; font-weight: 600;">Добавление новой позиции в меню</p>
+                <div class="form-group">
+                    <label>Название</label>
+                    <input type="text" id="prodTitle" class="form-control" placeholder="Например: Круассан с миндалем">
+                </div>
+                <div class="form-group">
+                    <label>Категория</label>
+                    <select id="prodCategory" class="form-control">
+                        <option value="Классика">Классика</option>
+                        <option value="Авторский">Авторский</option>
+                        <option value="Выпечка">Выпечка</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Цена (в рублях)</label>
+                    <input type="number" id="prodPrice" class="form-control" placeholder="350">
+                </div>
+                <div class="form-group">
+                    <label>Ссылка на картинку (URL)</label>
+                    <input type="text" id="prodImg" class="form-control" placeholder="https://images.unsplash.com/...">
+                </div>
+                <div class="form-group">
+                    <label>Описание</label>
+                    <textarea id="prodDesc" class="form-control" rows="3" placeholder="Свежая хрустящая выпечка..."></textarea>
+                </div>
+                <div class="modal-btns">
+                    <button class="btn-close-modal" onclick="closeAdminPanel()">Закрыть</button>
+                    <button class="btn-submit" onclick="addProduct()">Добавить товар</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Первый экран -->
     <section class="hero">
@@ -557,6 +808,7 @@
                 <button class="filter-btn active" onclick="filterMenu('Все', this)">Все</button>
                 <button class="filter-btn" onclick="filterMenu('Классика', this)">Классика</button>
                 <button class="filter-btn" onclick="filterMenu('Авторский', this)">Авторский</button>
+                <button class="filter-btn" onclick="filterMenu('Выпечка', this)">Выпечка</button>
             </div>
         </div>
 
@@ -565,72 +817,24 @@
         </div>
     </section>
 
-    <!-- Модальное окно Админ-панели -->
-    <div class="modal-overlay" id="adminModal">
-        <div class="admin-modal">
-            <h3 id="modalTitle">Панель администратора</h3>
-            <div id="loginForm">
-                <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.95rem;">Введите пароль для доступа к добавлению позиций (пароль: <code>admin123</code>)</p>
-                <div class="form-group">
-                    <label>Пароль</label>
-                    <input type="password" id="adminPassword" class="form-control" placeholder="••••••••">
-                </div>
-                <div class="modal-btns">
-                    <button class="btn-close-modal" onclick="closeAdminPanel()">Отмена</button>
-                    <button class="btn-submit" onclick="checkPassword()">Войти</button>
-                </div>
-            </div>
-
-            <div id="addProductForm" style="display: none;">
-                <p style="color: var(--accent); margin-bottom: 20px; font-weight: 600;">Добавление новой позиции в меню</p>
-                <div class="form-group">
-                    <label>Название</label>
-                    <input type="text" id="prodTitle" class="form-control" placeholder="Например: Матча Лате">
-                </div>
-                <div class="form-group">
-                    <label>Категория</label>
-                    <select id="prodCategory" class="form-control">
-                        <option value="Классика">Классика</option>
-                        <option value="Авторский">Авторский</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Цена (в рублях)</label>
-                    <input type="number" id="prodPrice" class="form-control" placeholder="350">
-                </div>
-                <div class="form-group">
-                    <label>Ссылка на картинку (URL)</label>
-                    <input type="text" id="prodImg" class="form-control" placeholder="https://images.unsplash.com/...">
-                </div>
-                <div class="form-group">
-                    <label>Описание</label>
-                    <textarea id="prodDesc" class="form-control" rows="3" placeholder="Нежный кокосовый напиток..."></textarea>
-                </div>
-                <div class="modal-btns">
-                    <button class="btn-close-modal" onclick="closeAdminPanel()">Закрыть</button>
-                    <button class="btn-submit" onclick="addProduct()">Добавить товар</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Футер -->
-    <footer>
+    <footer id="about">
         <div>© 2026 BLACK BEAN. Все права защищены.</div>
-        <div>ул. Свободы, 14 • Ежедневно с 07:30 до 22:00</div>
+        <div id="contacts">ул. Свободы, 14 • Ежедневно с 07:30 до 22:00</div>
     </footer>
 
     <script>
-        // Анимация прелоудера при входе
+        // Прелоудер
         window.addEventListener('load', () => {
             setTimeout(() => {
                 document.getElementById('preloader').classList.add('loaded');
             }, 800);
         });
 
-        // Базовые товары по умолчанию
+        // Базовые товары
         const defaultProducts = [
             {
+                id: 1,
                 title: "Флэт Уайт",
                 category: "Классика",
                 price: 320,
@@ -638,6 +842,7 @@
                 desc: "Двойной ристретто, шелковистое вспененное молоко. Ноты карамели и грецкого ореха."
             },
             {
+                id: 2,
                 title: "Эспрессо Тоник",
                 category: "Авторский",
                 price: 290,
@@ -645,6 +850,7 @@
                 desc: "Освежающий микс цитрусового тоника, льда и мощного шлота эспрессо с яркой кислинкой."
             },
             {
+                id: 3,
                 title: "Лаванда Раф",
                 category: "Авторский",
                 price: 380,
@@ -653,8 +859,8 @@
             }
         ];
 
-        // Загрузка товаров из localStorage или установка дефолтных
         let products = JSON.parse(localStorage.getItem('coffee_products')) || defaultProducts;
+        let cart = [];
         let currentFilter = 'Все';
 
         // Рендер меню
@@ -669,7 +875,7 @@
                 return;
             }
 
-            filtered.forEach((item, index) => {
+            filtered.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'menu-card';
                 card.innerHTML = `
@@ -680,7 +886,7 @@
                         <p class="card-desc">${item.desc}</p>
                         <div class="card-footer">
                             <span class="card-price">${item.price} ₽</span>
-                            <button class="card-btn" onclick="alert('Товар «${item.title}» добавлен в заказ!')">+</button>
+                            <button class="card-btn" onclick="addToCart(${item.id})">+</button>
                         </div>
                     </div>
                 `;
@@ -694,6 +900,87 @@
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             renderMenu(category);
+        }
+
+        // Управление корзиной
+        function toggleCart() {
+            document.getElementById('cartOverlay').classList.toggle('open');
+        }
+
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            const cartItem = cart.find(item => item.id === productId);
+
+            if (cartItem) {
+                cartItem.quantity += 1;
+            } else {
+                cart.push({ ...product, quantity: 1 });
+            }
+
+            updateCartUI();
+            
+            const cartBtn = document.querySelector('.cart-btn-nav');
+            cartBtn.style.transform = 'scale(1.1)';
+            setTimeout(() => cartBtn.style.transform = 'scale(1)', 200);
+        }
+
+        function changeQuantity(productId, delta) {
+            const cartItem = cart.find(item => item.id === productId);
+            if (cartItem) {
+                cartItem.quantity += delta;
+                if (cartItem.quantity <= 0) {
+                    cart = cart.filter(item => item.id !== productId);
+                }
+            }
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const container = document.getElementById('cartItemsContainer');
+            const cartCount = document.getElementById('cartCount');
+            const cartTotalPrice = document.getElementById('cartTotalPrice');
+
+            container.innerHTML = '';
+            let totalCount = 0;
+            let totalPrice = 0;
+
+            if (cart.length === 0) {
+                container.innerHTML = `<p style="color: var(--text-muted); text-align: center; margin-top: 40px;">Корзина пока пуста ☕</p>`;
+            } else {
+                cart.forEach(item => {
+                    totalCount += item.quantity;
+                    totalPrice += item.price * item.quantity;
+
+                    const div = document.createElement('div');
+                    div.className = 'cart-item';
+                    div.innerHTML = `
+                        <div class="cart-item-info">
+                            <h4>${item.title}</h4>
+                            <div class="cart-item-price">${item.price} ₽ × ${item.quantity} = ${item.price * item.quantity} ₽</div>
+                        </div>
+                        <div class="cart-item-controls">
+                            <button class="qty-btn" onclick="changeQuantity(${item.id}, -1)">-</button>
+                            <span>${item.quantity}</span>
+                            <button class="qty-btn" onclick="changeQuantity(${item.id}, 1)">+</button>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+
+            cartCount.innerText = totalCount;
+            cartTotalPrice.innerText = totalPrice + ' ₽';
+        }
+
+        function checkout() {
+            if (cart.length === 0) {
+                alert('Сначала добавь что-нибудь в корзину!');
+                return;
+            }
+            alert('Заказ успешно оформлен! Бариста уже заваривает твой кофе. Ждем тебя на баре!');
+            cart = [];
+            updateCartUI();
+            toggleCart();
         }
 
         // Управление модалкой админки
@@ -737,6 +1024,7 @@
             }
 
             const newProduct = {
+                id: Date.now(),
                 title,
                 category,
                 price,
@@ -747,7 +1035,7 @@
             products.push(newProduct);
             localStorage.setItem('coffee_products', JSON.stringify(products));
 
-            // Сброс полей
+            // Очистка полей
             document.getElementById('prodTitle').value = '';
             document.getElementById('prodPrice').value = '';
             document.getElementById('prodImg').value = '';
@@ -755,7 +1043,7 @@
 
             closeAdminPanel();
             renderMenu(currentFilter);
-            alert('Товар успешно добавлен и опубликован!');
+            alert('Товар успешно добавлен и опубликован в меню!');
         }
 
         // Запуск при старте
