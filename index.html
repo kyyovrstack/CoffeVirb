@@ -10,7 +10,7 @@
             --bg: #100e0d;
             --surface: #1a1614;
             --surface-hover: #24201c;
-            --accent: #ccff00; /* Неоновый лайм */
+            --accent: #ccff00;
             --accent-glow: rgba(204, 255, 0, 0.15);
             --text: #f3f0ec;
             --text-muted: #9e9690;
@@ -29,6 +29,83 @@
             color: var(--text);
             overflow-x: hidden;
             scroll-behavior: smooth;
+        }
+
+        /* Прелоудер (Анимация при входе) */
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+
+        #preloader.loaded {
+            transform: translateY(-100%);
+        }
+
+        .loader-logo {
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: -2px;
+            color: var(--text);
+            text-transform: uppercase;
+            animation: pulse-loader 1s infinite alternate;
+        }
+
+        .loader-logo span {
+            color: var(--accent);
+        }
+
+        .loader-bar {
+            width: 200px;
+            height: 3px;
+            background: var(--border);
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 3px;
+        }
+
+        .loader-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            background: var(--accent);
+            transform: translateX(-100%);
+            animation: load-anim 0.8s forwards ease-in-out;
+        }
+
+        @keyframes load-anim {
+            to { transform: translateX(0); }
+        }
+
+        @keyframes pulse-loader {
+            0% { opacity: 0.5; transform: scale(0.98); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Анимация появления контента сайта */
+        .hero, header {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.8s forwards 0.8s ease;
+        }
+
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Навигация */
@@ -63,6 +140,7 @@
             display: flex;
             gap: 30px;
             list-style: none;
+            align-items: center;
         }
 
         .nav-links a {
@@ -74,6 +152,12 @@
 
         .nav-links a:hover {
             color: var(--accent);
+        }
+
+        .admin-link {
+            color: var(--accent) !important;
+            cursor: pointer;
+            font-weight: 800 !important;
         }
 
         .btn-order {
@@ -227,15 +311,29 @@
             background: var(--bg);
             border: 1px solid var(--border);
             border-radius: 20px;
-            padding: 30px;
-            transition: transform 0.3s, border-color 0.3s;
-            position: relative;
             overflow: hidden;
+            transition: transform 0.3s, border-color 0.3s;
+            display: flex;
+            flex-direction: column;
         }
 
         .menu-card:hover {
             transform: translateY(-5px);
             border-color: var(--accent);
+        }
+
+        .card-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: var(--surface-hover);
+        }
+
+        .card-content {
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
         }
 
         .card-tag {
@@ -244,7 +342,7 @@
             text-transform: uppercase;
             color: var(--accent);
             letter-spacing: 1px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             display: block;
         }
 
@@ -259,6 +357,7 @@
             font-size: 0.95rem;
             margin-bottom: 25px;
             line-height: 1.4;
+            flex-grow: 1;
         }
 
         .card-footer {
@@ -267,6 +366,7 @@
             align-items: center;
             border-top: 1px solid var(--border);
             padding-top: 20px;
+            margin-top: auto;
         }
 
         .card-price {
@@ -294,55 +394,100 @@
             color: var(--bg);
         }
 
-        /* Блок Квиза (Найди свой напиток) */
-        .quiz-section {
-            padding: 120px 10%;
-            background: var(--bg);
-            text-align: center;
-        }
-
-        .quiz-box {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 30px;
-            padding: 60px 40px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .quiz-box h3 {
-            font-size: 2.2rem;
-            font-weight: 800;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-        }
-
-        .quiz-box p {
-            color: var(--text-muted);
-            margin-bottom: 40px;
-        }
-
-        .quiz-options {
+        /* Модальное окно Админки */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
             display: flex;
             justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
         }
 
-        .quiz-option {
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .admin-modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 25px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .admin-modal h3 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            font-weight: 800;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
             background: var(--bg);
             border: 1px solid var(--border);
+            padding: 12px 16px;
+            border-radius: 12px;
             color: var(--text);
-            padding: 14px 24px;
-            border-radius: 15px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
         }
 
-        .quiz-option:hover {
+        .form-control:focus {
             border-color: var(--accent);
-            background: var(--accent-glow);
+        }
+
+        .modal-btns {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn-close-modal {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .btn-submit {
+            background: var(--accent);
+            border: none;
+            color: var(--bg);
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 800;
+            flex: 1;
         }
 
         /* Футер */
@@ -361,7 +506,7 @@
         @media(max-width: 768px) {
             .nav-links { display: none; }
             .hero { padding: 0 5%; }
-            .menu-section, .quiz-section { padding: 80px 5%; }
+            .menu-section { padding: 80px 5%; }
             .section-header { flex-direction: column; align-items: flex-start; gap: 20px; }
             footer { flex-direction: column; gap: 20px; text-align: center; }
         }
@@ -369,14 +514,22 @@
 </head>
 <body>
 
+    <!-- Прелоудер (Анимация при входе) -->
+    <div id="preloader">
+        <div class="loader-logo">BLACK<span>BEAN</span></div>
+        <div class="loader-bar">
+            <div class="loader-progress"></div>
+        </div>
+    </div>
+
     <!-- Навигация -->
     <header>
         <a href="#" class="logo">BLACK<span>BEAN</span></a>
         <ul class="nav-links">
             <li><a href="#menu">Меню</a></li>
-            <li><a href="#quiz">Подбор напитка</a></li>
             <li><a href="#about">О нас</a></li>
             <li><a href="#contacts">Контакты</a></li>
+            <li><a class="admin-link" onclick="openAdminPanel()">⚙️ Админка</a></li>
         </ul>
         <a href="#menu" class="btn-order">Взять с собой</a>
     </header>
@@ -387,7 +540,7 @@
         <p>Специалитет зерна, плотная обжарка и бескомпромиссный вкус. Варим так, что просыпаются даже те, кто спал.</p>
         <div class="hero-btns">
             <a href="#menu" class="btn-order" style="padding: 14px 30px; font-size: 1rem;">Смотреть меню</a>
-            <a href="#quiz" class="btn-secondary">Подогнать под настроение</a>
+            <a href="#about" class="btn-secondary">Узнать историю</a>
         </div>
         
         <div class="status-bar">
@@ -401,57 +554,65 @@
         <div class="section-header">
             <h2 class="section-title">Наше меню</h2>
             <div class="menu-filters">
-                <button class="filter-btn active">Все</button>
-                <button class="filter-btn">Классика</button>
-                <button class="filter-btn">Авторский</button>
+                <button class="filter-btn active" onclick="filterMenu('Все', this)">Все</button>
+                <button class="filter-btn" onclick="filterMenu('Классика', this)">Классика</button>
+                <button class="filter-btn" onclick="filterMenu('Авторский', this)">Авторский</button>
             </div>
         </div>
 
-        <div class="menu-grid">
-            <div class="menu-card">
-                <span class="card-tag">Хит продаж</span>
-                <h3 class="card-title">Флэт Уайт</h3>
-                <p class="card-desc">Двойной ристретто, шелковистое вспененное молоко. Ноты карамели и грецкого ореха.</p>
-                <div class="card-footer">
-                    <span class="card-price">320 ₽</span>
-                    <button class="card-btn">+</button>
-                </div>
-            </div>
-
-            <div class="menu-card">
-                <span class="card-tag">Крепкий</span>
-                <h3 class="card-title">Эспрессо Тоник</h3>
-                <p class="card-desc">Освежающий микс цитрусового тоника, льда и мощного шлота эспрессо с яркой кислинкой.</p>
-                <div class="card-footer">
-                    <span class="card-price">290 ₽</span>
-                    <button class="card-btn">+</button>
-                </div>
-            </div>
-
-            <div class="menu-card">
-                <span class="card-tag">Авторский</span>
-                <h3 class="card-title">Лаванда Раф</h3>
-                <p class="card-desc">Сливки, натуральный лавандовый сироп ручной работы, эспрессо и цветы лаванды сверху.</p>
-                <div class="card-footer">
-                    <span class="card-price">380 ₽</span>
-                    <button class="card-btn">+</button>
-                </div>
-            </div>
+        <div class="menu-grid" id="menuGrid">
+            <!-- Карточки рендерятся через JS -->
         </div>
     </section>
 
-    <!-- Секция Интерактивного Квиза -->
-    <section class="quiz-section" id="quiz">
-        <div class="quiz-box">
-            <h3>Какое у тебя сегодня настроение?</h3>
-            <p>Выбери вайб, а мы скажем, какой напиток вернет тебя к жизни.</p>
-            <div class="quiz-options">
-                <button class="quiz-option">⚡️ Нужно выжить на созвоне</button>
-                <button class="quiz-option">🧠 Спокойный фокус</button>
-                <button class="quiz-option">🔥 Хочу сладко и мощно</button>
+    <!-- Модальное окно Админ-панели -->
+    <div class="modal-overlay" id="adminModal">
+        <div class="admin-modal">
+            <h3 id="modalTitle">Панель администратора</h3>
+            <div id="loginForm">
+                <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.95rem;">Введите пароль для доступа к добавлению позиций (пароль: <code>admin123</code>)</p>
+                <div class="form-group">
+                    <label>Пароль</label>
+                    <input type="password" id="adminPassword" class="form-control" placeholder="••••••••">
+                </div>
+                <div class="modal-btns">
+                    <button class="btn-close-modal" onclick="closeAdminPanel()">Отмена</button>
+                    <button class="btn-submit" onclick="checkPassword()">Войти</button>
+                </div>
+            </div>
+
+            <div id="addProductForm" style="display: none;">
+                <p style="color: var(--accent); margin-bottom: 20px; font-weight: 600;">Добавление новой позиции в меню</p>
+                <div class="form-group">
+                    <label>Название</label>
+                    <input type="text" id="prodTitle" class="form-control" placeholder="Например: Матча Лате">
+                </div>
+                <div class="form-group">
+                    <label>Категория</label>
+                    <select id="prodCategory" class="form-control">
+                        <option value="Классика">Классика</option>
+                        <option value="Авторский">Авторский</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Цена (в рублях)</label>
+                    <input type="number" id="prodPrice" class="form-control" placeholder="350">
+                </div>
+                <div class="form-group">
+                    <label>Ссылка на картинку (URL)</label>
+                    <input type="text" id="prodImg" class="form-control" placeholder="https://images.unsplash.com/...">
+                </div>
+                <div class="form-group">
+                    <label>Описание</label>
+                    <textarea id="prodDesc" class="form-control" rows="3" placeholder="Нежный кокосовый напиток..."></textarea>
+                </div>
+                <div class="modal-btns">
+                    <button class="btn-close-modal" onclick="closeAdminPanel()">Закрыть</button>
+                    <button class="btn-submit" onclick="addProduct()">Добавить товар</button>
+                </div>
             </div>
         </div>
-    </section>
+    </div>
 
     <!-- Футер -->
     <footer>
@@ -459,5 +620,146 @@
         <div>ул. Свободы, 14 • Ежедневно с 07:30 до 22:00</div>
     </footer>
 
+    <script>
+        // Анимация прелоудера при входе
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('preloader').classList.add('loaded');
+            }, 800);
+        });
+
+        // Базовые товары по умолчанию
+        const defaultProducts = [
+            {
+                title: "Флэт Уайт",
+                category: "Классика",
+                price: 320,
+                img: "https://images.unsplash.com/photo-1577968897966-3d4325b36b61?auto=format&fit=crop&w=600&q=80",
+                desc: "Двойной ристретто, шелковистое вспененное молоко. Ноты карамели и грецкого ореха."
+            },
+            {
+                title: "Эспрессо Тоник",
+                category: "Авторский",
+                price: 290,
+                img: "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?auto=format&fit=crop&w=600&q=80",
+                desc: "Освежающий микс цитрусового тоника, льда и мощного шлота эспрессо с яркой кислинкой."
+            },
+            {
+                title: "Лаванда Раф",
+                category: "Авторский",
+                price: 380,
+                img: "https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&w=600&q=80",
+                desc: "Сливки, натуральный лавандовый сироп ручной работы, эспрессо и цветы лаванды сверху."
+            }
+        ];
+
+        // Загрузка товаров из localStorage или установка дефолтных
+        let products = JSON.parse(localStorage.getItem('coffee_products')) || defaultProducts;
+        let currentFilter = 'Все';
+
+        // Рендер меню
+        function renderMenu(filter = 'Все') {
+            const grid = document.getElementById('menuGrid');
+            grid.innerHTML = '';
+
+            const filtered = filter === 'Все' ? products : products.filter(p => p.category === filter);
+
+            if(filtered.length === 0) {
+                grid.innerHTML = `<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center; padding: 40px;">В этой категории пока пусто.</p>`;
+                return;
+            }
+
+            filtered.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'menu-card';
+                card.innerHTML = `
+                    <img src="${item.img || 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80'}" class="card-img" alt="${item.title}">
+                    <div class="card-content">
+                        <span class="card-tag">${item.category}</span>
+                        <h3 class="card-title">${item.title}</h3>
+                        <p class="card-desc">${item.desc}</p>
+                        <div class="card-footer">
+                            <span class="card-price">${item.price} ₽</span>
+                            <button class="card-btn" onclick="alert('Товар «${item.title}» добавлен в заказ!')">+</button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Фильтрация меню
+        function filterMenu(category, btn) {
+            currentFilter = category;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderMenu(category);
+        }
+
+        // Управление модалкой админки
+        const modal = document.getElementById('adminModal');
+        const loginForm = document.getElementById('loginForm');
+        const addProductForm = document.getElementById('addProductForm');
+
+        function openAdminPanel() {
+            modal.classList.add('open');
+            loginForm.style.display = 'block';
+            addProductForm.style.display = 'none';
+            document.getElementById('adminPassword').value = '';
+            document.getElementById('modalTitle').innerText = 'Панель администратора';
+        }
+
+        function closeAdminPanel() {
+            modal.classList.remove('open');
+        }
+
+        function checkPassword() {
+            const pass = document.getElementById('adminPassword').value;
+            if(pass === 'admin123') {
+                loginForm.style.display = 'none';
+                addProductForm.style.display = 'block';
+                document.getElementById('modalTitle').innerText = 'Добавить товар';
+            } else {
+                alert('Неверный пароль!');
+            }
+        }
+
+        function addProduct() {
+            const title = document.getElementById('prodTitle').value.trim();
+            const category = document.getElementById('prodCategory').value;
+            const price = Number(document.getElementById('prodPrice').value);
+            const img = document.getElementById('prodImg').value.trim();
+            const desc = document.getElementById('prodDesc').value.trim();
+
+            if(!title || !price) {
+                alert('Заполни название и цену!');
+                return;
+            }
+
+            const newProduct = {
+                title,
+                category,
+                price,
+                img: img || 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80',
+                desc: desc || 'Свежеприготовленный напиток нашей кофейни.'
+            };
+
+            products.push(newProduct);
+            localStorage.setItem('coffee_products', JSON.stringify(products));
+
+            // Сброс полей
+            document.getElementById('prodTitle').value = '';
+            document.getElementById('prodPrice').value = '';
+            document.getElementById('prodImg').value = '';
+            document.getElementById('prodDesc').value = '';
+
+            closeAdminPanel();
+            renderMenu(currentFilter);
+            alert('Товар успешно добавлен и опубликован!');
+        }
+
+        // Запуск при старте
+        renderMenu();
+    </script>
 </body>
 </html>
